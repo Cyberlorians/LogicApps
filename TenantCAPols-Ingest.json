@@ -1,0 +1,312 @@
+{
+    "$schema":  "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion":  "1.0.0.0",
+    "metadata":  {
+        "title":  "",
+        "description":  "",
+        "prerequisites":  "",
+        "postDeployment":  [
+        ],
+        "prerequisitesDeployTemplateFile":  "",
+        "lastUpdateTime":  "",
+        "entities":  [
+        ],
+        "tags":  [
+        ],
+        "support":  {
+            "tier":  "community",
+            "armtemplate":  "Generated from https://github.com/Azure/Azure-Sentinel/tree/master/Tools/Playbook-ARM-Template-Generator"
+        },
+        "author":  {
+            "name":  ""
+        }
+    },
+    "parameters":  {
+        "PlaybookName":  {
+            "defaultValue":  "TenantCAPols-Ingest",
+            "type":  "string"
+        }
+    },
+    "variables":  {
+        "AzureloganalyticsdatacollectorConnectionName":  "[concat('Azureloganalyticsdatacollector-', parameters('PlaybookName'))]"
+    },
+    "resources":  [
+        {
+            "properties":  {
+                "provisioningState":  "Succeeded",
+                "state":  "Enabled",
+                "definition":  {
+                    "$schema":  "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "contentVersion":  "1.0.0.0",
+                    "parameters":  {
+                        "$connections":  {
+                            "defaultValue":  {
+                            },
+                            "type":  "Object"
+                        }
+                    },
+                    "triggers":  {
+                        "Recurrence":  {
+                            "recurrence":  {
+                                "frequency":  "Week",
+                                "interval":  1,
+                                "schedule":  {
+                                    "weekDays":  [
+                                        "Monday",
+                                        "Friday"
+                                    ]
+                                }
+                            },
+                            "evaluatedRecurrence":  {
+                                "frequency":  "Week",
+                                "interval":  1,
+                                "schedule":  {
+                                    "weekDays":  [
+                                        "Monday",
+                                        "Friday"
+                                    ]
+                                }
+                            },
+                            "type":  "Recurrence"
+                        }
+                    },
+                    "actions":  {
+                        "For_each":  {
+                            "foreach":  "@body('Parse_All_Conditional_Access_Policies')?['value']",
+                            "actions":  {
+                                "Send_Data":  {
+                                    "runAfter":  {
+                                    },
+                                    "type":  "ApiConnection",
+                                    "inputs":  {
+                                        "body":  "@{items('For_each')}",
+                                        "headers":  {
+                                            "Log-Type":  "@variables('TenantCAPols-Ingest')"
+                                        },
+                                        "host":  {
+                                            "connection":  {
+                                                "name":  "@parameters('$connections')['azureloganalyticsdatacollector']['connectionId']"
+                                            }
+                                        },
+                                        "method":  "post",
+                                        "path":  "/api/logs"
+                                    }
+                                }
+                            },
+                            "runAfter":  {
+                                "Parse_all_conditional_access_policies":  [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type":  "Foreach"
+                        },
+                        "HTTP":  {
+                            "runAfter":  {
+                                "TenantCAPols-Ingest-InitVariable":  [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type":  "Http",
+                            "inputs":  {
+                                "authentication":  {
+                                    "audience":  "https://graph.microsoft.com",
+                                    "type":  "ManagedServiceIdentity"
+                                },
+                                "method":  "GET",
+                                "uri":  "https://graph.microsoft.com/v1.0/identity/conditionalAccess/policies"
+                            }
+                        },
+                        "Parse_all_conditional_access_policies":  {
+                            "runAfter":  {
+                                "HTTP":  [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type":  "ParseJson",
+                            "inputs":  {
+                                "content":  "@body('HTTP')",
+                                "schema":  {
+                                    "properties":  {
+                                        "@@odata.context":  {
+                                            "type":  "string"
+                                        },
+                                        "value":  {
+                                            "items":  {
+                                                "properties":  {
+                                                    "conditions":  {
+                                                        "properties":  {
+                                                            "applications":  {
+                                                                "properties":  {
+                                                                    "excludeApplications":  {
+                                                                        "type":  "array"
+                                                                    },
+                                                                    "includeApplications":  {
+                                                                        "items":  {
+                                                                            "type":  "string"
+                                                                        },
+                                                                        "type":  "array"
+                                                                    },
+                                                                    "includeUserActions":  {
+                                                                        "type":  "array"
+                                                                    }
+                                                                },
+                                                                "type":  "object"
+                                                            },
+                                                            "clientAppTypes":  {
+                                                                "type":  "array"
+                                                            },
+                                                            "deviceStates":  {
+                                                            },
+                                                            "locations":  {
+                                                            },
+                                                            "platforms":  {
+                                                            },
+                                                            "signInRiskLevels":  {
+                                                                "type":  "array"
+                                                            },
+                                                            "users":  {
+                                                                "properties":  {
+                                                                    "excludeGroups":  {
+                                                                        "type":  "array"
+                                                                    },
+                                                                    "excludeRoles":  {
+                                                                        "type":  "array"
+                                                                    },
+                                                                    "excludeUsers":  {
+                                                                        "type":  "array"
+                                                                    },
+                                                                    "includeGroups":  {
+                                                                        "type":  "array"
+                                                                    },
+                                                                    "includeRoles":  {
+                                                                        "type":  "array"
+                                                                    },
+                                                                    "includeUsers":  {
+                                                                        "items":  {
+                                                                            "type":  "string"
+                                                                        },
+                                                                        "type":  "array"
+                                                                    }
+                                                                },
+                                                                "type":  "object"
+                                                            }
+                                                        },
+                                                        "type":  "object"
+                                                    },
+                                                    "createdDateTime":  {
+                                                    },
+                                                    "displayName":  {
+                                                        "type":  "string"
+                                                    },
+                                                    "grantControls":  {
+                                                        "properties":  {
+                                                            "builtInControls":  {
+                                                                "items":  {
+                                                                    "type":  "string"
+                                                                },
+                                                                "type":  "array"
+                                                            },
+                                                            "customAuthenticationFactors":  {
+                                                                "type":  "array"
+                                                            },
+                                                            "operator":  {
+                                                                "type":  "string"
+                                                            },
+                                                            "termsOfUse":  {
+                                                                "type":  "array"
+                                                            }
+                                                        },
+                                                        "type":  [
+                                                            "object",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "id":  {
+                                                        "type":  "string"
+                                                    },
+                                                    "modifiedDateTime":  {
+                                                        "type":  [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "sessionControls":  {
+                                                    },
+                                                    "state":  {
+                                                        "type":  "string"
+                                                    }
+                                                },
+                                                "required":  [
+                                                    "id"
+                                                ],
+                                                "type":  "object"
+                                            },
+                                            "type":  "array"
+                                        }
+                                    },
+                                    "type":  "object"
+                                }
+                            }
+                        },
+                        "TenantCAPols-Ingest-InitVariable":  {
+                            "runAfter":  {
+                            },
+                            "type":  "InitializeVariable",
+                            "inputs":  {
+                                "variables":  [
+                                    {
+                                        "name":  "TenantCAPols-Ingest",
+                                        "type":  "string",
+                                        "value":  "TenantCAPols"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "outputs":  {
+                    }
+                },
+                "parameters":  {
+                    "$connections":  {
+                        "value":  {
+                            "azureloganalyticsdatacollector":  {
+                                "connectionId":  "[resourceId('Microsoft.Web/connections', variables('AzureloganalyticsdatacollectorConnectionName'))]",
+                                "connectionName":  "[variables('AzureloganalyticsdatacollectorConnectionName')]",
+                                "id":  "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/Azureloganalyticsdatacollector')]"
+                            }
+                        }
+                    }
+                }
+            },
+            "name":  "[parameters('PlaybookName')]",
+            "type":  "Microsoft.Logic/workflows",
+            "location":  "[resourceGroup().location]",
+            "identity":  {
+                "type":  "SystemAssigned"
+            },
+            "tags":  {
+                "hidden-SentinelTemplateName":  "TenantCAPols-Ingest",
+                "hidden-SentinelTemplateVersion":  "1.0"
+            },
+            "apiVersion":  "2017-07-01",
+            "dependsOn":  [
+                "[resourceId('Microsoft.Web/connections', variables('AzureloganalyticsdatacollectorConnectionName'))]"
+            ]
+        },
+        {
+            "type":  "Microsoft.Web/connections",
+            "apiVersion":  "2016-06-01",
+            "name":  "[variables('AzureloganalyticsdatacollectorConnectionName')]",
+            "location":  "[resourceGroup().location]",
+            "kind":  "V1",
+            "properties":  {
+                "displayName":  "[variables('AzureloganalyticsdatacollectorConnectionName')]",
+                "customParameterValues":  {
+                },
+                "api":  {
+                    "id":  "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/Azureloganalyticsdatacollector')]"
+                }
+            }
+        }
+    ]
+}
