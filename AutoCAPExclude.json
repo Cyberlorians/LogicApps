@@ -94,7 +94,7 @@
                                                                     "toRecipients":  [
                                                                         {
                                                                             "emailAddress":  {
-                                                                                "address":  "michaelcrane@microsoft.com"
+                                                                                "address":  "recipient@autocapexclude.com"
                                                                             }
                                                                         }
                                                                     ]
@@ -102,7 +102,7 @@
                                                                 "saveToSentItems":  "false"
                                                             },
                                                             "method":  "POST",
-                                                            "uri":  "https://graph.microsoft.com/v1.0/users/identitynotify@cranesmeadows.com/sendmail"
+                                                            "uri":  "https://graph.microsoft.com/v1.0/users/identitynotify@autocapexclude.com/sendmail"
                                                         }
                                                     }
                                                 },
@@ -132,7 +132,7 @@
                                                                         "toRecipients":  [
                                                                             {
                                                                                 "emailAddress":  {
-                                                                                    "address":  "michaelcrane@microsoft.com"
+                                                                                    "address":  "recipient@autocapexclude.com"
                                                                                 }
                                                                             }
                                                                         ]
@@ -140,7 +140,7 @@
                                                                     "saveToSentItems":  "false"
                                                                 },
                                                                 "method":  "POST",
-                                                                "uri":  "https://graph.microsoft.com/v1.0/users/identitynotify@cranesmeadows.com/sendmail"
+                                                                "uri":  "https://graph.microsoft.com/v1.0/users/identitynotify@autocapexclude.com/sendmail"
                                                             }
                                                         }
                                                     }
